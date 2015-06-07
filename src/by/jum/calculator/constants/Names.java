@@ -13,6 +13,8 @@ public enum Names {
     MULT("*"),
     DIV("/"),
     SQRT("√"),
+    SQRT_("sqrt"),
+    POW("^"),
     PI ("PI"),
     COS("cos"),
     SIN ("sin"),
@@ -42,3 +44,4 @@ public enum Names {
         return name;
     }
 }
+

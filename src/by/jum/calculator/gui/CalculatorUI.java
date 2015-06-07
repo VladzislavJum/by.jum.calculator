@@ -1,6 +1,7 @@
 package by.jum.calculator.gui;
 
 import by.jum.calculator.constants.Names;
+import by.jum.calculator.operations.ButtonListenerSetter;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -32,12 +33,13 @@ import java.util.List;
 public class CalculatorUI {
     public List<JButton> numberList;
     public List<JButton> buttonList;
+    public List<JButton> trigonometricList;
     private JFrame frame;
     private JPanel scoreboardPanel;
     private JPanel trigonometricPanel;
-    private TreeView tree;
     private JCheckBoxMenuItem treeCheckBox;
     private JScrollPane scrollPane;
+    private JTextField textField;
 
     public void createMainWindow() {
         try {
@@ -46,7 +48,7 @@ public class CalculatorUI {
             e.printStackTrace();
         }
         frame = new JFrame("Calculator");
-        // frame.setResizable(false);
+        frame.setResizable(false);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setSize(260, 360);
         frame.setLocationRelativeTo(null);
@@ -75,13 +77,13 @@ public class CalculatorUI {
                     scrollPane.setVisible(true);
                     buttonList.get(2).setEnabled(true);
                     buttonList.get(3).setEnabled(true);
-                    frame.setSize(150 + frame.getWidth(), 360);
+                    frame.setSize(120 + frame.getWidth(), 360);
 
                 } else {
                     scrollPane.setVisible(false);
                     buttonList.get(2).setEnabled(false);
                     buttonList.get(3).setEnabled(false);
-                    frame.setSize(frame.getWidth() - 150, 360);
+                    frame.setSize(frame.getWidth() - 120, 360);
                 }
             }
         });
@@ -122,12 +124,12 @@ public class CalculatorUI {
         scoreboardPanel.updateUI();
         frame.add(scoreboardPanel, BorderLayout.CENTER);
 
-        JTextField textField = new JTextField();
+        textField = new JTextField();
         textField.setPreferredSize(new Dimension(100, 75));
         textField.setHorizontalAlignment(JTextField.RIGHT);
         textField.setFont(new Font("Calibri", Font.BOLD, 30));
         textField.setOpaque(true);
-        textField.setBackground(Color.lightGray);
+        textField.setBackground(Color.white);
         textField.setBorder(BorderFactory.createLineBorder(Color.RED));
         frame.add(textField, BorderLayout.NORTH);
 
@@ -148,17 +150,21 @@ public class CalculatorUI {
         buttonList.add(new JButton(Names.MULT.getName()));
         buttonList.add(new JButton(Names.DIV.getName()));
         buttonList.add(new JButton(Names.SQRT.getName()));
+        buttonList.add(new JButton(Names.POW.getName()));
         buttonList.add(new JButton(Names.POINT.getName()));
-        buttonList.add(new JButton(Names.OPPOSITE.getName()));
         buttonList.add(new JButton(Names.PERCENT.getName()));
+        buttonList.add(new JButton(Names.OPPOSITE.getName()));
         buttonList.add(new JButton(Names.COUNT.getName()));
 
+        buttonList.get(10).setActionCommand(Names.SQRT_.getName());
 
         for (JButton button : buttonList) {
             button.setFont(new Font("Calibri", Font.BOLD, 20));
         }
         locate();
         addNumberButton();
+        addTrigonometric();
+        addButtonListeners();
         scoreboardPanel.setSize(232, 264);
 
     }
@@ -175,17 +181,17 @@ public class CalculatorUI {
                     GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
         }
 
-        for (int number = 6, alignmentY = 2; number < 11; number++, alignmentY++) {
+        for (int number = 6, alignmentY = 2; number < 12; number++, alignmentY++) {
             scoreboardPanel.add(buttonList.get(number), new GridBagConstraints(3, alignmentY, 1, 1, 1, 1, GridBagConstraints.NORTH,
                     GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
         }
 
-        for (int number = 11, alignmentX = 0; number < 14; number++, alignmentX++) {
+        for (int number = 12, alignmentX = 0; number < 15; number++, alignmentX++) {
             scoreboardPanel.add(buttonList.get(number), new GridBagConstraints(alignmentX, 6, 1, 1, 1, 1, GridBagConstraints.NORTH,
                     GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
         }
 
-        scoreboardPanel.add(buttonList.get(14), new GridBagConstraints(0, 7, 4, 1, 1, 1, GridBagConstraints.NORTH,
+        scoreboardPanel.add(buttonList.get(15), new GridBagConstraints(0, 7, 3, 1, 1, 1, GridBagConstraints.NORTH,
                 GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
 
     }
@@ -222,7 +228,7 @@ public class CalculatorUI {
     }
 
     public void addTree() {
-        tree = new TreeView();
+        TreeView tree = new TreeView();
         scrollPane = tree.addTreePanel();
         scrollPane.setVisible(false);
         frame.add(scrollPane, BorderLayout.WEST);
@@ -231,8 +237,15 @@ public class CalculatorUI {
     }
 
     public void addTrigonometric() {
-        trigonometricPanel = new TrigonometricPanel().addTrigonometricPanel();
+        TrigonometricButtons trigonometricButtons = new TrigonometricButtons();
+        trigonometricPanel = trigonometricButtons.addTrigonometricPanel();
+        trigonometricList = trigonometricButtons.getTrigonometricList();
         frame.add(trigonometricPanel, BorderLayout.EAST);
     }
+
+    public void addButtonListeners() {
+        new ButtonListenerSetter(numberList, buttonList, trigonometricList, textField);
+    }
+
 
 }

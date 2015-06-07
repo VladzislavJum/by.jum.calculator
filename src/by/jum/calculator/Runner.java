@@ -14,7 +14,6 @@ public class Runner {
                 mainWindow.createMenu();
                 mainWindow.addScoreboard();
                 mainWindow.addTree();
-                mainWindow.addTrigonometric();
             }
         });
     }

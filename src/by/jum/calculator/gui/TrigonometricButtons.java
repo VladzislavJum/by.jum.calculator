@@ -4,14 +4,13 @@ import by.jum.calculator.constants.Names;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Vlad on 06.06.2015.
- */
-public class TrigonometricPanel {
+
+public class TrigonometricButtons {
     private List<JButton> trigonometricList;
 
     public JPanel addTrigonometricPanel() {
@@ -19,7 +18,9 @@ public class TrigonometricPanel {
 
         trigonometricList = new ArrayList<JButton>();
         trigonometricPanel.setVisible(false);
-        trigonometricPanel.setLayout(new GridLayout(8, 1));
+        trigonometricPanel.setLayout(new GridLayout(9, 1));
+
+        trigonometricList.add(new JButton(Names.PI.getName()));
         trigonometricList.add(new JButton(Names.SIN.getName()));
         trigonometricList.add(new JButton(Names.COS.getName()));
         trigonometricList.add(new JButton(Names.SINH.getName()));
@@ -30,6 +31,8 @@ public class TrigonometricPanel {
         trigonometricList.add(new JButton(Names.CTGH.getName()));
 
         for (JButton button : trigonometricList) {
+            button.setFont(new Font("Calibri", Font.BOLD, 20));
+
             trigonometricPanel.add(button);
         }
 
