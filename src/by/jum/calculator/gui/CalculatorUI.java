@@ -2,29 +2,11 @@ package by.jum.calculator.gui;
 
 import by.jum.calculator.constants.Names;
 import by.jum.calculator.operations.ButtonListenerSetter;
+import by.jum.calculator.tree.TreeView;
 
-import javax.swing.BorderFactory;
-import javax.swing.ButtonGroup;
-import javax.swing.JButton;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JPanel;
-import javax.swing.JRadioButtonMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
@@ -39,6 +21,7 @@ public class CalculatorUI {
     private JPanel trigonometricPanel;
     private JCheckBoxMenuItem treeCheckBox;
     private JScrollPane scrollPane;
+    private JTree tree;
     private JTextField textField;
 
     public void createMainWindow() {
@@ -164,7 +147,6 @@ public class CalculatorUI {
         locate();
         addNumberButton();
         addTrigonometric();
-        addButtonListeners();
         scoreboardPanel.setSize(232, 264);
 
     }
@@ -228,8 +210,9 @@ public class CalculatorUI {
     }
 
     public void addTree() {
-        TreeView tree = new TreeView();
-        scrollPane = tree.addTreePanel();
+        TreeView treeView = new TreeView();
+        scrollPane = treeView.addTreePanel();
+        tree = treeView.getTree();
         scrollPane.setVisible(false);
         frame.add(scrollPane, BorderLayout.WEST);
         buttonList.get(2).setEnabled(false);
@@ -244,7 +227,7 @@ public class CalculatorUI {
     }
 
     public void addButtonListeners() {
-        new ButtonListenerSetter(numberList, buttonList, trigonometricList, textField);
+        new ButtonListenerSetter(numberList, buttonList, trigonometricList, textField, tree);
     }
 
 

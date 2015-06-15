@@ -2,6 +2,7 @@ package by.jum.calculator.operations;
 
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -12,11 +13,12 @@ public class ButtonListenerSetter {
     private List<JButton> buttonList;
     private TextWriter textWriter;
     private List<JButton> trigonometricButtonList;
-
-    public ButtonListenerSetter(List<JButton> numberList, List<JButton> buttonList, List<JButton> trigonometricButtonList, JTextField textField) {
+    private JTree tree;
+    public ButtonListenerSetter(List<JButton> numberList, List<JButton> buttonList, List<JButton> trigonometricButtonList, JTextField textField, JTree tree) {
         this.numberList = numberList;
         this.buttonList = buttonList;
         this.trigonometricButtonList = trigonometricButtonList;
+        this.tree = tree;
         textWriter = new TextWriter(textField);
         addNumberListeners();
         addOperationButtonListeners();
@@ -32,18 +34,18 @@ public class ButtonListenerSetter {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    textWriter.setNumber(e.getActionCommand());
+                    textWriter.setExpression(e.getActionCommand());
                 }
             });
         }
     }
 
     private void addOperationButtonListeners() {
-        for (int number = 6; number < 12; number++) {
+        for (int number = 6; number < 13; number++) {
             buttonList.get(number).addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    textWriter.setNumber(e.getActionCommand());
+                    textWriter.setExpression(e.getActionCommand());
                 }
             });
         }
@@ -52,7 +54,7 @@ public class ButtonListenerSetter {
             buttonList.get(number).addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    textWriter.setNumber(e.getActionCommand());
+                    textWriter.setExpression(e.getActionCommand());
                 }
             });
         }
@@ -63,7 +65,7 @@ public class ButtonListenerSetter {
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    textWriter.setNumber(e.getActionCommand());
+                    textWriter.setExpression(e.getActionCommand());
                 }
             });
         }
@@ -73,7 +75,7 @@ public class ButtonListenerSetter {
         clearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                textWriter.clearTextField();
+                textWriter.clearTextField(tree);
             }
         });
     }
@@ -91,14 +93,14 @@ public class ButtonListenerSetter {
         countButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                textWriter.count();
+                textWriter.count(tree);
             }
         });
 
         textField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                textWriter.count();
+                textWriter.count(tree);
             }
         });
     }
