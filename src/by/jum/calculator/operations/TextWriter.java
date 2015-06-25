@@ -9,15 +9,18 @@ import java.math.RoundingMode;
 
 public class TextWriter {
     private JTextField textField;
+    private ExpressionCalculator expressionCalculator;
 
     public TextWriter(JTextField textField) {
         this.textField = textField;
+        expressionCalculator = new ExpressionCalculator();
     }
 
     public void setExpression(String expression) {
         int caretPosition = textField.getCaretPosition();
         String text = textField.getText();
-        textField.setText(text.substring(0, caretPosition) + expression + text.substring(caretPosition, text.length()));
+        textField.setText(text.substring(0, caretPosition) + expression +
+                text.substring(caretPosition, text.length()));
         textField.requestFocusInWindow();
         textField.setCaretPosition(caretPosition + expression.length());
     }
@@ -32,15 +35,25 @@ public class TextWriter {
         String text = textField.getText();
         if (text.length() == 0) return;
         int caretPosition = textField.getCaretPosition();
-        textField.setText(text.substring(0, caretPosition - 1) + text.substring(caretPosition, text.length()));
+        textField.setText(text.substring(0, caretPosition - 1) +
+                text.substring(caretPosition, text.length()));
         textField.requestFocusInWindow();
         textField.setCaretPosition(caretPosition - 1);
     }
 
     public void count(JTree tree) {
-        ExpressionCalculator expressionUtils = new ExpressionCalculator(tree);
-
-        textField.setText(String.valueOf(new BigDecimal(Double.parseDouble(expressionUtils.calculateExpression(textField.getText()))).setScale(3, RoundingMode.UP).doubleValue()));
+        textField.setText(String.valueOf(new BigDecimal(Double.parseDouble(
+                expressionCalculator.calculateExpression(textField.getText(), tree))).
+                setScale(3, RoundingMode.UP).doubleValue()));
     }
+
+    public void folding() {
+        textField.setText(expressionCalculator.folding());
+    }
+
+    public void unFolding() {
+        textField.setText(expressionCalculator.unFolding());
+    }
+
 
 }

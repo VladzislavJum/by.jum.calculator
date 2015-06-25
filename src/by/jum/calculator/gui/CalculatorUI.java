@@ -2,7 +2,6 @@ package by.jum.calculator.gui;
 
 import by.jum.calculator.constants.Names;
 import by.jum.calculator.operations.ButtonListenerSetter;
-import by.jum.calculator.tree.TreeView;
 
 import javax.swing.*;
 import javax.swing.plaf.nimbus.NimbusLookAndFeel;
@@ -139,7 +138,7 @@ public class CalculatorUI {
         buttonList.add(new JButton(Names.OPPOSITE.getName()));
         buttonList.add(new JButton(Names.COUNT.getName()));
 
-        buttonList.get(10).setActionCommand(Names.SQRT_.getName());
+        buttonList.get(14).setActionCommand("1/");
 
         for (JButton button : buttonList) {
             button.setFont(new Font("Calibri", Font.BOLD, 20));

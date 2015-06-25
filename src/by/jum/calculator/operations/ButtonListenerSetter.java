@@ -14,6 +14,7 @@ public class ButtonListenerSetter {
     private TextWriter textWriter;
     private List<JButton> trigonometricButtonList;
     private JTree tree;
+
     public ButtonListenerSetter(List<JButton> numberList, List<JButton> buttonList, List<JButton> trigonometricButtonList, JTextField textField, JTree tree) {
         this.numberList = numberList;
         this.buttonList = buttonList;
@@ -26,6 +27,8 @@ public class ButtonListenerSetter {
         addClearButtonListener(buttonList.get(5));
         addRemoveButtonListener(buttonList.get(4));
         addCountListener(buttonList.get(15), textField);
+        addFoldingListener(buttonList.get(2));
+        addUnFoldingListener(buttonList.get(3));
     }
 
 
@@ -41,7 +44,7 @@ public class ButtonListenerSetter {
     }
 
     private void addOperationButtonListeners() {
-        for (int number = 6; number < 13; number++) {
+        for (int number = 6; number < 15; number++) {
             buttonList.get(number).addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -104,5 +107,25 @@ public class ButtonListenerSetter {
             }
         });
     }
+
+
+    private void addFoldingListener(JButton foldingButton) {
+        foldingButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textWriter.folding();
+            }
+        });
+    }
+
+    private void addUnFoldingListener(JButton unFoldingButton) {
+        unFoldingButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textWriter.unFolding();
+            }
+        });
+    }
+
 
 }

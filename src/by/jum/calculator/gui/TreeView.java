@@ -1,4 +1,4 @@
-package by.jum.calculator.tree;
+package by.jum.calculator.gui;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;

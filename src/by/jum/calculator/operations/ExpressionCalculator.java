@@ -1,5 +1,7 @@
 package by.jum.calculator.operations;
 
+import by.jum.calculator.constants.Names;
+
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -25,7 +27,8 @@ public class ExpressionCalculator {
         MATH_OPERATIONS.put("x", 1); //cosh
         MATH_OPERATIONS.put("v", 1); //tgh
         MATH_OPERATIONS.put("b", 1); //ctgh
-        MATH_OPERATIONS.put("q", 2); //sqrt
+        MATH_OPERATIONS.put("%", 1);
+        MATH_OPERATIONS.put("√", 2); //sqrt
         MATH_OPERATIONS.put("^", 2); //pow
         MATH_OPERATIONS.put("*", 3);
         MATH_OPERATIONS.put("/", 3);
@@ -33,29 +36,26 @@ public class ExpressionCalculator {
         MATH_OPERATIONS.put("-", 4);
     }
 
-    //  private final String[] TRIGONOMETRIC_REDUCTION = {String.valueOf(Math.PI), "z", "x", "b", "v", "s", "c", "g", "t", "q"};
-    // private final String[] TRIGONOMETRIC = {"PI", "sinh", "cosh", "ctgh", "tgh", "sin", "cos", "ctg", "tg", "sqrt"};
     public final List<String> TRIGONOMETRIC_OPERATIONS_LIST;
 
     {
         TRIGONOMETRIC_OPERATIONS_LIST = new ArrayList<String>();
-        TRIGONOMETRIC_OPERATIONS_LIST.add("PI"); //sqrt
-        TRIGONOMETRIC_OPERATIONS_LIST.add("sinh"); //sinh
-        TRIGONOMETRIC_OPERATIONS_LIST.add("cosh"); //cosh
-        TRIGONOMETRIC_OPERATIONS_LIST.add("ctgh"); //ctgh
-        TRIGONOMETRIC_OPERATIONS_LIST.add("tgh"); //tgh
-        TRIGONOMETRIC_OPERATIONS_LIST.add("sin"); //sin
-        TRIGONOMETRIC_OPERATIONS_LIST.add("cos"); //cos
-        TRIGONOMETRIC_OPERATIONS_LIST.add("ctg"); //ctg
-        TRIGONOMETRIC_OPERATIONS_LIST.add("tg"); //tg
-        TRIGONOMETRIC_OPERATIONS_LIST.add("sqrt"); //sqrt
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.PI.getName());
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.SINH.getName()); //sinh
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.COSH.getName()); //cosh
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.CTGH.getName()); //ctgh
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.TGH.getName()); //tgh
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.SIN.getName()); //sin
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.COS.getName()); //cos
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.CTG.getName()); //ctg
+        TRIGONOMETRIC_OPERATIONS_LIST.add(Names.TG.getName()); //tg
     }
 
     public final List<String> TRIGONOMETRIC_REDUCTION;
 
     {
         TRIGONOMETRIC_REDUCTION = new ArrayList<String>();
-        TRIGONOMETRIC_REDUCTION.add(String.valueOf(Math.PI)); //sqrt
+        TRIGONOMETRIC_REDUCTION.add(String.valueOf(3.141));
         TRIGONOMETRIC_REDUCTION.add("z"); //sinh
         TRIGONOMETRIC_REDUCTION.add("x"); //cosh
         TRIGONOMETRIC_REDUCTION.add("b"); //ctgh
@@ -64,18 +64,24 @@ public class ExpressionCalculator {
         TRIGONOMETRIC_REDUCTION.add("c"); //cos
         TRIGONOMETRIC_REDUCTION.add("g"); //ctg
         TRIGONOMETRIC_REDUCTION.add("t"); //tg
-        TRIGONOMETRIC_REDUCTION.add("q"); //sqrt
     }
 
+    private Stack<DefaultTreeModel> defaultTreeModelStack = new Stack<DefaultTreeModel>();
+    private Stack<String> expressionStack = new Stack<String>();
+    private StringTokenizer tokenizer;
+    private Stack<Double> stack;
+    private String expression;
+    private Operations operations;
     private JTree tree;
+    private Double operand1;
+    private Double operand2;
 
-    public ExpressionCalculator(JTree tree) {
-        this.tree = tree;
-
+    public ExpressionCalculator() {
+        operations = new Operations();
     }
 
     // из инфиксной нотации в обратную польскую
-    public String sortingStation(String expression, Map<String, Integer> operations, String leftBracket, String rightBracket) {
+    public String sortingStation(String expression, String leftBracket, String rightBracket) {
 
 
         expression = expression.replace(" ", "");
@@ -84,7 +90,7 @@ public class ExpressionCalculator {
         // Стек операций.
         Stack<String> stack = new Stack<String>();
         // Множество "символов", не являющихся операндами (операции и скобки).
-        Set<String> operationSymbols = new HashSet<String>(operations.keySet());
+        Set<String> operationSymbols = new HashSet<String>(MATH_OPERATIONS.keySet());
         operationSymbols.add(leftBracket);
         operationSymbols.add(rightBracket);
         // Индекс, на котором закончился разбор строки на прошлой итерации.
@@ -102,7 +108,6 @@ public class ExpressionCalculator {
                     nextOperationIndex = i;
                 }
             }
-            // Оператор не найден.
             if (nextOperationIndex == expression.length()) {
                 findNext = false;
             } else {
@@ -128,7 +133,7 @@ public class ExpressionCalculator {
                 // Операция.
                 else {
                     while (!stack.empty() && !stack.peek().equals(leftBracket) &&
-                            (operations.get(nextOperation) >= operations.get(stack.peek()))) {
+                            (MATH_OPERATIONS.get(nextOperation) >= MATH_OPERATIONS.get(stack.peek()))) {
                         out.add(stack.pop());
                     }
                     stack.push(nextOperation);
@@ -165,158 +170,217 @@ public class ExpressionCalculator {
     }
 
 
-    public String sortingStation(String expression, Map<String, Integer> operations) {
-        return sortingStation(expression, operations, "(", ")");
+    public String sortingStation(String expression) {
+        return sortingStation(expression, "(", ")");
     }
 
     // вычисление
-    public String calculateExpression(String expression) {
-
-        expression = replace(expression);
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
-        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("");
-
+    public String calculateExpression(String expression, JTree tree) {
 
         if (expression.length() == 0) {
-            return "";
+            return String.valueOf(0);
         }
+        this.expression = expression;
+        this.tree = tree;
+
+        expressionStack.push(expression);
+
+        expression = replace();
+        buildTree();
+        StringTokenizer tokenizer = new StringTokenizer(sortingStation(expression), " ");
+        Stack<Double> stack = new Stack<Double>();
+
+        while (tokenizer.hasMoreTokens()) {
+            String token = tokenizer.nextToken();
+            if (!MATH_OPERATIONS.keySet().contains(token)) {
+                stack.push(Double.parseDouble(token));
+            } else {
+                calculate(stack, token);
+            }
+        }
+
+
+        return stack.pop().toString();
+    }
+
+
+    private void buildTree() {
         Stack<String> stringStack = new Stack<String>();
-        Operations operations = new Operations();
-        String rpn = sortingStation(expression, MATH_OPERATIONS);
-        StringTokenizer tokenizer = new StringTokenizer(rpn, " ");
-
-
+        String rpn = sortingStation(expression);
         StringTokenizer tokenizerTree = new StringTokenizer(rpn, " ");
 
         while (tokenizerTree.hasMoreTokens()) {
             stringStack.add(tokenizerTree.nextToken());
         }
 
-        boolean b = true;
-        int q = 0;
-        int i = 0;
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
+        DefaultMutableTreeNode treeNode = new DefaultMutableTreeNode("");
+
+        boolean bool = true;
+        int trigonometricCount = 0;
+        int operationCount = 0;
         while (!stringStack.isEmpty()) {
             String string = stringStack.pop();
-            System.out.println("Next" + string);
+            //  System.out.println("Next" + string);
             if (!MATH_OPERATIONS.keySet().contains(string)) {
-                if (++q == 2 && TRIGONOMETRIC_REDUCTION.contains(string)) {
+                if (++trigonometricCount == 2 && TRIGONOMETRIC_REDUCTION.contains(string)) {
                     DefaultMutableTreeNode parent = (DefaultMutableTreeNode) treeNode.getParent();
                     parent.add(new DefaultMutableTreeNode(string));
-
-                } else if (++i != 3) {
+                } else if (++operationCount != 3) {
                     treeNode.add(new DefaultMutableTreeNode(string));
+                    //  DefaultMutableTreeNode d = (DefaultMutableTreeNode)root.clone();
+                    //treeModelArrayList.add(new DefaultTreeModel(d));
                 } else {
                     DefaultMutableTreeNode parent = (DefaultMutableTreeNode) treeNode.getParent();
                     parent.add(new DefaultMutableTreeNode(string));
                 }
 
-            } else if (b) {
-                i = 0;
-                b = false;
+            } else if (bool) {
+                operationCount = 0;
+                bool = false;
                 if (TRIGONOMETRIC_REDUCTION.contains(string)) {
-                    q = 0;
-                    treeNode = new DefaultMutableTreeNode(TRIGONOMETRIC_OPERATIONS_LIST.get(TRIGONOMETRIC_REDUCTION.indexOf(string)));
+                    trigonometricCount = 0;
+                    treeNode = new DefaultMutableTreeNode(TRIGONOMETRIC_OPERATIONS_LIST.
+                            get(TRIGONOMETRIC_REDUCTION.indexOf(string)));
 
                 } else {
                     treeNode = new DefaultMutableTreeNode(string);
                 }
                 root.add(treeNode);
-
             } else {
                 DefaultMutableTreeNode node;
-                i = 0;
+                operationCount = 0;
                 if (TRIGONOMETRIC_REDUCTION.contains(string)) {
-                    q = 0;
-                    node = new DefaultMutableTreeNode(TRIGONOMETRIC_OPERATIONS_LIST.get(TRIGONOMETRIC_REDUCTION.indexOf(string)));
-                }else {
-                   node = new DefaultMutableTreeNode(string);
+                    trigonometricCount = 0;
+                    node = new DefaultMutableTreeNode(TRIGONOMETRIC_OPERATIONS_LIST.
+                            get(TRIGONOMETRIC_REDUCTION.indexOf(string)));
+                } else {
+                    node = new DefaultMutableTreeNode(string);
                 }
                 treeNode.add(node);
                 treeNode = node;
             }
-
-
         }
-
 
         tree.setModel(new DefaultTreeModel(root));
         for (int rowCout = 0; rowCout < tree.getRowCount(); rowCout++) {
             tree.expandRow(rowCout);
         }
 
+    }
 
-        // System.out.println("TO" + tokenizer.countTokens());
-        Stack<Double> stack = new Stack<Double>();
-        while (tokenizer.hasMoreTokens()) {
-            String token = tokenizer.nextToken();
-            //  System.out.println("Next" + token);
-            // Операнд.
-            if (!MATH_OPERATIONS.keySet().contains(token)) {
-                stack.push(Double.parseDouble(token));
-            } else {
+    private double calculate(Stack<Double> stack, String token) {
+        operand2 = stack.pop();
+        operand1 = stack.empty() ? 0 : stack.pop();
 
-                Double operand2 = stack.pop();
-                Double operand1 = stack.empty() ? 0 : stack.pop();
-
-
-                if (token.equals("*")) {
-                    stack.push(operations.multiplication(operand1, operand2));
-                } else if (token.equals("/")) {
-                    stack.push(operations.div(operand1, operand2));
-                } else if (token.equals("+")) {
-                    stack.push(operations.add(operand1, operand2));
-                } else if (token.equals("-")) {
-                    stack.push(operations.diff(operand1, operand2));
-                } else if (token.equals("^")) {
-                    stack.push(operations.pow(operand1, operand2));
-                } else if (token.equals("s")) {
-                    stack.push(operations.sin(operand2));
-                } else if (token.equals("c")) {
-                    stack.push(operations.cos(operand1));
-                } else if (token.equals("t")) {
-                    stack.push(operations.tg(operand1));
-                } else if (token.equals("g")) {
-                    stack.push(operations.ctg(operand1));
-                } else if (token.equals("z")) {
-                    stack.push(operations.sinh(operand1));
-                } else if (token.equals("x")) {
-                    stack.push(operations.cosh(operand1));
-                } else if (token.equals("v")) {
-                    stack.push(operations.tgh(operand1));
-                } else if (token.equals("b")) {
-                    stack.push(operations.ctgh(operand1));
-                } else if (token.equals("q")) {
-                    stack.push(operations.sqrt(operand1));
-                }
-            }
+        if (token.equals("*")) {
+            stack.push(operations.multiplication(operand1, operand2));
+        } else if (token.equals("/")) {
+            stack.push(operations.div(operand1, operand2));
+        } else if (token.equals("+")) {
+            stack.push(operations.add(operand1, operand2));
+        } else if (token.equals("%")) {
+            stack.push(operand1);
+            stack.push(operations.percent(operand1, operand2));
+        } else if (token.equals("-")) {
+            stack.push(operations.diff(operand1, operand2));
+        } else if (token.equals("^")) {
+            stack.push(operations.pow(operand1, operand2));
+        } else if (token.equals("s")) {
+            stack.push(operations.sin(operand2));
+        } else if (token.equals("c")) {
+            stack.push(operations.cos(operand2));
+        } else if (token.equals("t")) {
+            stack.push(operations.tg(operand2));
+        } else if (token.equals("g")) {
+            stack.push(operations.ctg(operand2));
+        } else if (token.equals("z")) {
+            stack.push(operations.sinh(operand2));
+        } else if (token.equals("x")) {
+            stack.push(operations.cosh(operand2));
+        } else if (token.equals("v")) {
+            stack.push(operations.tgh(operand2));
+        } else if (token.equals("b")) {
+            stack.push(operations.ctgh(operand2));
+        } else if (token.equals("√")) {
+            stack.push(operations.sqrt(operand2));//корень багнутый
         }
 
-        return stack.pop().toString();
+        double answer = stack.pop();
+        stack.push(answer);
+        return answer;
+
     }
 
 
-    String replace(String expression) {
-
+    String replace() {
         for (int i = 0; i < TRIGONOMETRIC_OPERATIONS_LIST.size(); i++) {
             String string = TRIGONOMETRIC_OPERATIONS_LIST.get(i);
             if (expression.contains(string)) {
                 expression = expression.replaceAll(string, TRIGONOMETRIC_REDUCTION.get(i));
             }
         }
-
         return expression;
     }
 
-    String replaceBack(String expression) {
+    private void getTokens() {
+        expression = replace();
+        tokenizer = new StringTokenizer(sortingStation(expression), " ");
+        stack = new Stack<Double>();
 
-        for (int i = 0; i < TRIGONOMETRIC_REDUCTION.size(); i++) {
-            String string = TRIGONOMETRIC_REDUCTION.get(i);
-            if (expression.contains(string)) {
-                //  expression = expression.replaceAll(string, TRIGONOMETRIC_OPERATIONS.get(string));
+    }
+
+    public String folding() {
+        getTokens();
+        String token;
+        if (tokenizer.countTokens() > 1) {
+            expressionStack.push(expression);
+            defaultTreeModelStack.push((DefaultTreeModel) tree.getModel());
+            do {
+                token = tokenizer.nextToken();
+                if (!MATH_OPERATIONS.keySet().contains(token)) {
+                    stack.push(Double.parseDouble(token));
+                } else {
+                    //       System.out.println("Calc");
+                    String value = String.valueOf(calculate(stack, token));
+                    if (operand1 != 0.0) {
+                        //         System.out.println(operand1 + "||||" + operand2);
+                        expression = expression.replace("(" + operand1 + token + operand2 + ")", value);
+                        expression = expression.replace(operand1 + token + operand2, value);
+                    } else {
+                        expression = expression.replace("(" + token + operand2 + ")", value);
+                        expression = expression.replace(token + "(" + operand2 + ")", value);
+//                    expression = expression.replace(operand2+ token, value); //багииии с %
+                    }
+                }
+            } while (!MATH_OPERATIONS.keySet().contains(token));
+
+            String answer = calculateExpression(expression, tree);
+            if (!tokenizer.hasMoreTokens()) {
+                DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+                root.add(new DefaultMutableTreeNode(answer));
+                tree.setModel(new DefaultTreeModel(root));
+            }
+
+            if (!expressionStack.contains(expression)) {
+                expressionStack.push(expression);
+                defaultTreeModelStack.push((DefaultTreeModel) tree.getModel());
             }
         }
-
         return expression;
     }
+
+    public String unFolding() {
+        if (!defaultTreeModelStack.isEmpty()) {
+            tree.setModel(defaultTreeModelStack.pop());
+            expression = expressionStack.pop();
+            expression = expressionStack.pop();
+            for (int rowCout = 0; rowCout < tree.getRowCount(); rowCout++) {
+                tree.expandRow(rowCout);
+            }
+        }
+        return expression;
+    }
+
 }
 
